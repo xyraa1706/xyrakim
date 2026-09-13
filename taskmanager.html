@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+
+  <style>
+    :root {
+      --purple: #6c3fc5;
+      --dark: #331b61;
+      --light: #f4efff;
+      --white: #ffffff;
+      --text: #2d2141;
+      --muted: #786d8e;
+      --danger: #e74c6f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #f7f3ff, #e9ddff);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 100vh;
+    }
+
+    aside {
+      padding: 30px 20px;
+      color: white;
+      background: linear-gradient(160deg, var(--dark), var(--purple));
+    }
+
+    .logo {
+      margin-bottom: 42px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .menu button {
+      width: 100%;
+      margin: 6px 0;
+      padding: 12px;
+      color: white;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .menu button:hover,
+    .menu button:focus-visible,
+    .menu button.active {
+      background: rgba(255, 255, 255, 0.18);
+      outline: 2px solid transparent;
+    }
+
+    main {
+      max-width: 1100px;
+      width: 100%;
+      padding: 35px;
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtitle,
+    .empty {
+      color: var(--muted);
+    }
+
+    .card {
+      padding: 22px;
+      margin-top: 22px;
+      background: var(--white);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(65, 35, 110, 0.1);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .progress-card {
+      color: white;
+      background: linear-gradient(135deg, #6440c9, #a085ef);
+    }
+
+    .progress-bar {
+      height: 10px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 20px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: white;
+      border-radius: 20px;
+      transition: width 0.3s;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+    }
+
+    .add-btn {
+      padding: 11px 16px;
+      color: white;
+      background: var(--purple);
+      border: 0;
+      border-radius: 9px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .add-btn:hover {
+      background: var(--dark);
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: 25px 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #eee8fa;
+    }
+
+    .task:last-child {
+      border-bottom: 0;
+    }
+
+    .task.done .task-name {
+      color: #aaa0bd;
+      text-decoration: line-through;
+    }
+
+    input[type="checkbox"] {
+      width: 19px;
+      height: 19px;
+      accent-color: var(--purple);
+      cursor: pointer;
+    }
+
+    .task-name {
+      font-weight: bold;
+    }
+
+    .task-details {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .priority {
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .high {
+      color: #b52f50;
+      background: #ffe3ea;
+    }
+
+    .medium {
+      color: #956b00;
+      background: #fff1c8;
+    }
+
+    .low {
+      color: #287a66;
+      background: #d8f6ed;
+    }
+
+    .delete-btn {
+      color: var(--danger);
+      background: transparent;
+      border: 0;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .important-item {
+      padding: 13px;
+      margin: 10px 0;
+      background: var(--light);
+      border-radius: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        display: none;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside>
+      <div class="logo">✓ Purple Tasks</div>
+
+      <nav class="menu" aria-label="Task views">
+        <button class="active" type="button" data-view="today">▣ Today</button>
+        <button type="button" data-view="all">☑ My Tasks</button>
+        <button type="button" data-view="upcoming">◷ Upcoming</button>
+        <button type="button" data-view="important">★ Important</button>
+      </nav>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <h1 id="pageTitle">Today</h1>
+          <p class="subtitle" id="pageSubtitle">Tasks due today.</p>
+        </div>
+      </header>
+
+      <section class="stats">
+        <div class="card progress-card">
+          <h3>Today's Progress</h3>
+          <p id="progressText">0 of 0 tasks completed</p>
+
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Important This Week</h3>
+          <div class="important-item">📌 Finish project presentation</div>
+          <div class="important-item">📞 Call family</div>
+          <div class="important-item">🗓 Plan next week</div>
+          <div class="important-item">⛪ Church</div>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <h2 id="listTitle">Today's Tasks</h2>
+        <button class="add-btn" type="button" id="addTaskButton">
+          + Add Task
+        </button>
+      </div>
+
+      <section class="card" id="taskList" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <script>
+    let activeView = "today";
+
+    let tasks = [
+      {
+        name: "Finish website design",
+        details: "Due today at 3:00 PM",
+        priority: "high",
+        done: false,
+        due: "today",
+        important: true
+      },
+      {
+        name: "Reply to emails",
+        details: "Work messages",
+        priority: "medium",
+        done: false,
+        due: "today",
+        important: false
+      },
+      {
+        name: "Morning walk",
+        details: "Personal habit",
+        priority: "low",
+        done: true,
+        due: "today",
+        important: false
+      },
+      {
+        name: "Plan next week",
+        details: "Due tomorrow",
+        priority: "medium",
+        done: false,
+        due: "upcoming",
+        important: true
+      },
+      {
+        name: "Call family",
+        details: "Due Sunday",
+        priority: "high",
+        done: false,
+        due: "upcoming",
+        important: true
+      }
+    ];
+
+    const viewDetails = {
+      today: {
+        title: "Today",
+        subtitle: "Tasks due today.",
+        listTitle: "Today's Tasks"
+      },
+      all: {
+        title: "My Tasks",
+        subtitle: "All of your tasks in one place.",
+        listTitle: "All Tasks"
+      },
+      upcoming: {
+        title: "Upcoming",
+        subtitle: "Tasks planned for later.",
+        listTitle: "Upcoming Tasks"
+      },
+      important: {
+        title: "Important",
+        subtitle: "Your high-priority tasks.",
+        listTitle: "Important Tasks"
+      }
+    };
+
+    function visibleTasks() {
+      if (activeView === "today") {
+        return tasks.filter(task => task.due === "today");
+      }
+
+      if (activeView === "upcoming") {
+        return tasks.filter(task => task.due === "upcoming");
+      }
+
+      if (activeView === "important") {
+        return tasks.filter(task => task.important);
+      }
+
+      return tasks;
+    }
+
+    function renderTasks() {
+      const list = document.getElementById("taskList");
+      const filteredTasks = visibleTasks();
+
+      if (filteredTasks.length === 0) {
+        list.innerHTML = `<p class="empty">No tasks in this view yet.</p>`;
+        updateProgress();
+        return;
+      }
+
+      list.innerHTML = filteredTasks.map(task => {
+        const index = tasks.indexOf(task);
+
+        return `
+          <div class="task ${task.done ? "done" : ""}">
+            <input
+              type="checkbox"
+              aria-label="Mark ${task.name} complete"
+              ${task.done ? "checked" : ""}
+              onchange="toggleTask(${index})"
+            >
+
+            <div>
+              <div class="task-name">${task.name}</div>
+              <div class="task-details">${task.details}</div>
+            </div>
+
+            <span class="priority ${task.priority}">
+              ${task.priority.toUpperCase()}
+            </span>
+
+            <button
+              class="delete-btn"
+              type="button"
+              aria-label="Delete ${task.name}"
+              onclick="deleteTask(${index})"
+            >
+              ×
+            </button>
+          </div>
+        `;
+      }).join("");
+
+      updateProgress();
+    }
+
+    function selectView(view) {
+      activeView = view;
+
+      const detail = viewDetails[view];
+
+      document.getElementById("pageTitle").textContent = detail.title;
+      document.getElementById("pageSubtitle").textContent = detail.subtitle;
+      document.getElementById("listTitle").textContent = detail.listTitle;
+
+      document.querySelectorAll(".menu button").forEach(button => {
+        button.classList.toggle("active", button.dataset.view === view);
+      });
+
+      renderTasks();
+    }
+
+    function toggleTask(index) {
+      tasks[index].done = !tasks[index].done;
+      renderTasks();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      renderTasks();
+    }
+
+    function addTask() {
+      const name = prompt("Enter task name:");
+
+      if (!name || !name.trim()) {
+        return;
+      }
+
+      const priority = prompt(
+        "Priority: high, medium, or low?",
+        "medium"
+      )?.toLowerCase();
+
+      const validPriority = ["high", "medium", "low"].includes(priority)
+        ? priority
+        : "medium";
+
+      tasks.unshift({
+        name: name.trim(),
+        details: "New task",
+        priority: validPriority,
+        done: false,
+        due: "today",
+        important: validPriority === "high"
+      });
+
+      selectView("today");
+    }
+
+    function updateProgress() {
+      const todayTasks = tasks.filter(task => task.due === "today");
+      const completed = todayTasks.filter(task => task.done).length;
+      const total = todayTasks.length;
+      const percent = total ? (completed / total) * 100 : 0;
+
+      document.getElementById("progressText").textContent =
+        `${completed} of ${total} tasks completed`;
+
+      document.getElementById("progressFill").style.width =
+        `${percent}%`;
+    }
+
+    document.querySelectorAll(".menu button").forEach(button => {
+      button.addEventListener("click", () => {
+        selectView(button.dataset.view);
+      });
+    });
+
+    document.getElementById("addTaskButton").addEventListener("click", addTask);
+
+    renderTasks();
+  </script>
+</body>
+</html>
